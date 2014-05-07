@@ -24,13 +24,15 @@ implements ListSelectionListener, ActionListener
     private MusicPlayer player;
     // A reader that can read music files and load them as tracks.
     private TrackReader reader;
-    //the frame
-    private JFrame frame;
     //list for tracks to be shown
-    private JList trackList, playlist;
+    private JList trackList, playlist;  
+    //helplist for the playlist. contains tracks to be listed in playlist.
+    private DefaultListModel<Track> playlistHelpList, trackListHelpList;
     //index of selected track in list
     private int selectedTrackIndex;
- 
+     // selected track
+    private Track selectedTrack;
+
     /**
      * Create a MusicOrganizer
      */
@@ -76,13 +78,21 @@ implements ListSelectionListener, ActionListener
      * Play a track in the collection.
      * @param index The index of the track to be played.
      */
-    public void playTrack(int index)
+    public void playTrackIndex(int index)
     {
         if(indexValid(index)) {
             Track track = tracks.get(index);
             player.startPlaying(track.getFilename());
             System.out.println("Now playing: " + track.getArtist() + " - " + track.getTitle());
         }
+    }
+    
+      public void playTrack(Track track)
+    {
+                
+            player.startPlaying(track.getFilename());
+            System.out.println("Now playing: " + track.getArtist() + " - " + track.getTitle());
+      
     }
 
     /**
@@ -117,8 +127,8 @@ implements ListSelectionListener, ActionListener
 
         return trackList;
     }
-    
-      /**
+
+    /**
      * Show a list of all the tracks in the collection.
      */
     public ArrayList<String> getAllTracksPlaylist()
@@ -214,27 +224,67 @@ implements ListSelectionListener, ActionListener
      */
     private void makeFrame(){
         //frame
-        frame = new JFrame("MusicOrganiizer");
+        JFrame frame = new JFrame("MusicOrganiizer");
         Container contentPane = frame.getContentPane();
         contentPane.setLayout(new FlowLayout());
-        
+
         //Label
         JLabel label = new JLabel("Music library loaded.  "+ getNumberOfTracks() + " tracks.");
         contentPane.add(label);
 
         //imported tracks list
-        trackList= new JList(showTrackList());
-        trackList.setVisibleRowCount(5); //FIXME
+       // trackListHelpList = new DefaultListModel<Track>();
+       // for(Track track: String{[ t=getTrackList() )
+       // trackListHelpList.addElement(track);
+        
+        trackList= new JList(getTrackList());
+        trackList.setVisibleRowCount(5); 
+        trackList.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component renderer = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (renderer instanceof JLabel && value instanceof Track) {
+                     //only show artist and Title of tracks
+                    ((JLabel) renderer).setText(((Track) value).getArtist() + ((Track) value).getTitle());
+                }
+                return renderer;
+            }
+        });
+        
         trackList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         contentPane.add(new JScrollPane(trackList));
-        trackList.addListSelectionListener(this);
-        
+        trackList.addListSelectionListener(new ListSelectionListener(){
+                public void valueChanged(ListSelectionEvent e){
+                    selectedTrack= (Track)trackList.getSelectedValue();
+                }
+
+            });
+
         //Playlist track list
-         playlist= new JList(showPlaylist());
-        playlist.setVisibleRowCount(5); //FIXME
+        playlistHelpList = new DefaultListModel<Track>();
+        playlist= new JList(playlistHelpList);
+        playlist.setVisibleRowCount(5); 
+        playlist.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component renderer = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (renderer instanceof JLabel && value instanceof Track) {
+                     //only show artist and Title of tracks
+                    ((JLabel) renderer).setText(((Track) value).getArtist() + ((Track) value).getTitle());
+                }
+                return renderer;
+            }
+        });
+        
         playlist.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         contentPane.add(new JScrollPane(playlist));
         playlist.addListSelectionListener(this);
+        playlist.addListSelectionListener(new ListSelectionListener(){
+                public void valueChanged(ListSelectionEvent e){
+                    selectedTrack= (Track)playlist.getSelectedValue();
+                }
+
+            });
 
         //Stop button
         ImageIcon stopButtonIcon = new ImageIcon("stop.png");
@@ -254,9 +304,7 @@ implements ListSelectionListener, ActionListener
         playButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) { 
                     stopPlaying(); //stop playing old track before playing new track
-                    playTrack(selectedTrackIndex);
-                   
-
+                    playTrack(selectedTrack);  
                 }
             });
 
@@ -265,8 +313,13 @@ implements ListSelectionListener, ActionListener
         contentPane.add(addToPlaylistButton);
         addToPlaylistButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) { 
-                    addToPlaylist(tracks.get(selectedTrackIndex));
-                    playlist.addElement(tracks.get(selectedTrackIndex));
+                    selectedTrack=(Track)trackList.getSelectedValue();
+                    addToPlaylist(selectedTrack);
+                    playlistHelpList.addElement(selectedTrack);
+                    
+                    
+                    //addToPlaylist(tracks.get(selectedTrackIndex));
+                    //playlistHelpList.addElement(tracks.get(selectedTrackIndex));
                 }
             });
 
@@ -275,31 +328,27 @@ implements ListSelectionListener, ActionListener
 
     }
 
-    /**
-     * if item in the list is selected
-     */
-    public void valueChanged(ListSelectionEvent e) {     
-         selectedTrackIndex = trackList.getSelectedIndex();
-         //selectedTrack = (Track)trackList.getSelectedValue(); 
-      
-    } 
 
     /**
      * returns array of all available tracks
      */
-    private String[] showTrackList() {
-        ArrayList<String> temp = getAllTracks();               
-        String [] arraytrack = temp.toArray(new String[temp.size()]);
+    private Track[] getTrackList() {
+                     
+        Track [] arraytrack = tracks.toArray(new Track[tracks.size()]);
         return arraytrack;
     }
-    
-      private String[] showPlaylist() {
-        ArrayList<String> temp = getAllTracksPlaylist();               
-        String [] arraytrack = temp.toArray(new String[temp.size()]);
+
+    private Track[] getPlaylist() {
+                   
+        Track [] arraytrack = playlistTracks.toArray(new Track[playlistTracks.size()]);   
         return arraytrack;
     }
 
     public void actionPerformed(ActionEvent evt) {
     }
+     public void valueChanged(ListSelectionEvent e) { 
+    } 
+    
+
 
 }
