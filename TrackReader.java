@@ -54,6 +54,16 @@ public class TrackReader
         }
         return tracks;
     }
+    
+    public Track readTrack(String path){
+    	File audioFile = new File(path);
+    	Track trackDetails=null;
+    	if (path.endsWith(".mp3")){
+    		trackDetails= decodeDetails(audioFile);
+    		return trackDetails;
+    	}
+    	return trackDetails;
+    }
 
     /**
      * Try to decode details of the artist and the title

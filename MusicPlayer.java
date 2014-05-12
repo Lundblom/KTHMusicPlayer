@@ -1,4 +1,5 @@
 import java.io.BufferedInputStream;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.IOException;
@@ -6,6 +7,10 @@ import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.AudioDevice;
 import javazoom.jl.player.FactoryRegistry;
 import javazoom.jl.player.advanced.AdvancedPlayer;
+import javazoom.jl.player.advanced.PlaybackEvent;
+import javazoom.jl.player.advanced.PlaybackListener;
+
+
 
 /**
  * Provide basic playing of MP3 files via the javazoom library.
@@ -14,10 +19,12 @@ import javazoom.jl.player.advanced.AdvancedPlayer;
  * @author David J. Barnes and Michael Kölling.
  * @version 2011.07.31
  */
-public class MusicPlayer
-{
+
+
+public class MusicPlayer {
     // The current player. It might be null.
     private AdvancedPlayer player;
+
     
     /**
      * Constructor for objects of class MusicFilePlayer
@@ -25,6 +32,7 @@ public class MusicPlayer
     public MusicPlayer()
     {
         player = null;
+        
     }
     
     /**
@@ -53,19 +61,22 @@ public class MusicPlayer
      */
     public void startPlaying(final String filename)
     {
-        try {
+   
+        try {        
             setupPlayer(filename);
             Thread playerThread = new Thread() {
                 public void run()
                 {
-                    try {
-                        player.play(5000);
+                    try {                    	
+                        player.play( Integer.MAX_VALUE);          	
                     }
                     catch(JavaLayerException e) {
                         reportProblem(filename);
                     }
                     finally {
+                    
                         killPlayer();
+                        
                     }
                 }
             };
@@ -77,19 +88,23 @@ public class MusicPlayer
     }
     
     public void stop()
-    {
+    {    	
         killPlayer();
     }
+ 
     
     /**
      * Set up the player ready to play the given file.
      * @param filename The name of the file to play.
      */
     private void setupPlayer(String filename)
-    {
+    {     
+
+    	
         try {
             InputStream is = getInputStream(filename);
             player = new AdvancedPlayer(is, createAudioDevice());
+         
         }
         catch (IOException e) {
             reportProblem(filename);
@@ -133,7 +148,7 @@ public class MusicPlayer
         synchronized(this) {
             if(player != null) {
                 player.stop();
-                player = null;
+                //player = null;
             }
         }
     }
