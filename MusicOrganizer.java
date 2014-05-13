@@ -33,19 +33,38 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 	private int selectedTrackIndex;
 	// selected track
 	private Track selectedTrack;
+	
+	private TrackParser parser = new TrackParser();
 
 	/**
 	 * Create a MusicOrganizer
 	 */
 	public MusicOrganizer() {
+		
+		File f = new File(parser.PATH_NAME);
+		
+		boolean success = false;
+		
+		if(!f.exists())
+		{
+			success = f.mkdirs();
+			if(!success)
+				System.out.println("Couldn't create directories");
+		}
+		
+		
+		
 		tracks = new ArrayList<Track>();
 		playlistTracks = new ArrayList<Track>();
 		trackListHelpList = new DefaultListModel<Track>();
 		player = new MusicPlayer();
 		reader = new TrackReader();
 
-		readLibrary("F:\\Musik\\Led Zeppelin - Greatest hits\\CD 2");
-
+		readLibrary("C:\\Users\\dajmmannen\\Documents\\Downloads\\Metallica - The Greatest Hits 2011 2CDRip [Bubanee]\\Metallica - The Greatest Hits CD1 [Bubanee]");
+		
+		parser.saveList(tracks, "hej.xml");
+		System.out.println(tracks);
+		
 		makeFrame();
 	}
 
