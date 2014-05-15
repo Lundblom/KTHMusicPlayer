@@ -41,6 +41,7 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 	 */
 	public MusicOrganizer() {
 		
+		//Creates the necessary directories
 		File f = new File(parser.PATH_NAME);
 		
 		boolean success = false;
@@ -262,6 +263,11 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 			trackListHelpList.addElement(track);
 		}
 	}
+	
+	private void savePlayList(String name)
+	{
+		parser.saveList(playlistTracks, name);
+	}
 
 	private void addFileToLibrary(String filePath) {
 
@@ -284,7 +290,7 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 		Color foreground = new Color(100, 200, 0);
 
 		// frame
-		JFrame frame = new JFrame("MusicOrganizer");
+		final JFrame frame = new JFrame("MusicOrganizer");
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		Container contentPane = frame.getContentPane();
 		contentPane.setLayout(new FlowLayout());
@@ -494,6 +500,28 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 				}
 			});
 		}
+		
+		// remove from playlist button
+				{
+					JButton savePlayListButton = new JButton("Save playlist");
+					savePlayListButton.setBorderPainted(false);
+					savePlayListButton.setForeground(foreground);
+					savePlayListButton.setBackground(brighterBackground);
+					contentPane.add(savePlayListButton);
+					savePlayListButton.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							
+							String s = (String)JOptionPane.showInputDialog(frame, "Enter playlist name: ", null);
+							
+							if(s == null || s.equals(""))
+								return;
+							
+							savePlayList(s + ".xml");
+
+			
+						}
+					});
+				}
 
 		{
 			JButton nextInPlaylistButton = new JButton("Next");
