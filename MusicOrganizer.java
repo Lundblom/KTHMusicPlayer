@@ -64,9 +64,15 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 		reader = new TrackReader();
 
 		readLibrary("C:\\Users\\dajmmannen\\Documents\\Downloads\\Metallica - The Greatest Hits 2011 2CDRip [Bubanee]\\Metallica - The Greatest Hits CD1 [Bubanee]");
-		
 		parser.saveList(tracks, "hej.xml");
-		System.out.println(tracks);
+		
+		
+		tracks = parser.readList("hej.xml");
+		
+		System.out.println(tracks.size());
+
+		for(int i = 0; i < tracks.size(); i++)
+			System.out.println(tracks.get(i).getFilename());
 		
 		makeFrame();
 	}

@@ -56,7 +56,7 @@ public class TrackParser
 			  
 			doc.getDocumentElement().normalize();
 			//tracks is the name of the root element
-		    NodeList nodeList = doc.getElementsByTagName("track");  
+		    NodeList nodeList = doc.getElementsByTagName("track");
 			  
 			//Iterate over all found elements  
 			for (int temp = 0; temp < nodeList.getLength(); temp++)
@@ -68,13 +68,33 @@ public class TrackParser
 				if (node.getNodeType() == Node.ELEMENT_NODE) 
 				{  
 				  	Element track = (Element) node;
+				  	
 				  	String artist = null;
 				   	String title = null;
 				   	String filename = null;
 					    	
-				   	artist = track.getAttribute("artist");
-				   	title = track.getAttribute("title");
-				   	fileName = track.getAttribute("fileName");
+
+                    //-------
+                    NodeList artistList = track.getElementsByTagName("artist");
+                    Element artistElement = (Element)artistList.item(0);
+
+                    artist = artistElement.getTextContent();
+
+                    //-------
+                    NodeList titleList = track.getElementsByTagName("title");
+                    Element titleElement = (Element)titleList.item(0);
+
+                    title = titleElement.getTextContent();
+
+
+                    //----
+                    NodeList fileList = track.getElementsByTagName("filename");
+                    Element fileElement = (Element)fileList.item(0);
+
+                    filename = fileElement.getTextContent();
+
+
+                    //------
 				    	
 				   	Track t = new Track(artist, title, filename);
 					    	
