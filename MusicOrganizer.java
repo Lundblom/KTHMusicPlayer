@@ -5,14 +5,14 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.ImageIcon;
-import javax.swing.filechooser.*;
+
 import java.io.*;
 
 /**
  * A class to hold details of audio tracks. Individual tracks may be played.
  * 
- * @author David J. Barnes and Michael Kölling
- * @version 2011.07.31
+ * @author Martin Eklund and Andreas Lundblom
+ * @version 2014.05.15
  */
 public class MusicOrganizer extends JFrame implements ListSelectionListener,
 		ActionListener {
@@ -30,8 +30,6 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 	// helplist for the playlist. contains tracks to be listed in playlist. used
 	// in graphic
 	private DefaultListModel<Track> playlistHelpList, trackListHelpList;
-	// index of selected track in list
-	private int selectedTrackIndex;
 	// selected track
 	private Track selectedTrack;
 
@@ -58,10 +56,6 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 		trackListHelpList = new DefaultListModel<Track>();
 		player = new MusicPlayer();
 		reader = new TrackReader();
-
-		readLibrary("F:\\Musik\\Led Zeppelin - Greatest hits\\CD 2");
-		parser.saveList(tracks, "hej.xml");
-		System.out.println(tracks);
 
 		makeFrame();
 	}
@@ -132,6 +126,12 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 		}
 	}
 
+	/**
+	 * plays the specified track
+	 * 
+	 * @param track
+	 *            the track to be played
+	 */
 	public void playTrack(Track track) {
 
 		player.startPlaying(track.getFilename());
@@ -242,16 +242,6 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 		return valid;
 	}
 
-	private void readLibrary(String folderName) {
-		ArrayList<Track> tempTracks = reader.readTracks(folderName, ".mp3");
-
-		// Put all thetracks into the organizer.
-		for (Track track : tempTracks) {
-
-			addTrack(track);
-		}
-	}
-
 	private void addFolderToLibrary(String folderName) {
 
 		ArrayList<Track> tempTracks = reader.readTracks(folderName, ".mp3");
@@ -278,85 +268,30 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 		return arraytrack;
 	}
 
-	private Track[] getPlaylist() {
-
-		Track[] arraytrack = playlistTracks.toArray(new Track[playlistTracks
-				.size()]);
-		return arraytrack;
-	}
-
 	/**
-	 * see what playlist contains
+	 * Load playlist from a file
+	 * 
+	 * @param name
+	 *            Name of the playlist file
+	 * 
 	 */
-	private void showPlaylist() {
-		for (Track track : playlistTracks) {
-			System.out.println(track.getFilename());
-		}
-	}
-
-	
-	private  ArrayList<Track> loadPlayList(String name) {
-		 return parser.readList(name);
+	private ArrayList<Track> loadPlayList(String name) {
+		return parser.readList(name);
 	}
 
 	/**
 	 * Save playlist to file
+	 * 
+	 * @param name
+	 *            Name of the playlist file
 	 */
 
 	private void savePlayList(String name) {
 		parser.saveList(playlistTracks, name);
 	}
 
-	private void savePlaylist(String name) {
-		try {
-			File file = new File(name + ".txt");
-			if (!file.exists()) {
-				file.createNewFile();
-			}
-			FileWriter fw = new FileWriter(file.getAbsoluteFile());
-			BufferedWriter bw = new BufferedWriter(fw);
-
-			// write every filepath in the playlist to the file
-			for (Track track : playlistTracks) {
-				System.out.println(track.getFilename());
-
-				bw.write(track.getFilename() + "\n");
-			}
-			bw.close();
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-	}
-
 	/**
-	 * Open a saved playlist
-	 */
-	private void openPlaylist(File file) {
-		try {
-
-			BufferedReader br = new BufferedReader(new FileReader(file));
-			String line;
-
-			playlistTracks.clear();
-			playlistHelpList.clear();
-			// read every line and add it to library and playlist
-			while ((line = br.readLine()) != null) {
-				Track addedTrack = reader.readTrack(line);
-
-				addFileToLibrary(line);
-				addToPlaylist(addedTrack);
-				playlistHelpList.addElement(addedTrack);
-			}
-			br.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * draw stuff
+	 * Graphics
 	 */
 	private void makeFrame() {
 
@@ -373,29 +308,56 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 		Container contentPane = frame.getContentPane();
 		contentPane.setBackground(background);
 		contentPane.setLayout(new BorderLayout());
-		
-		//Jpanels
-		JPanel buttonPanel=new JPanel();
+
+		// Jpanels
+		JPanel buttonPanel = new JPanel();
 		buttonPanel.setBackground(background);
 		buttonPanel.setLayout(new FlowLayout());
+
+		JPanel listPanel1 = new JPanel();
+		listPanel1.setBackground(background);
+		listPanel1.setLayout(new BorderLayout());
+		listPanel1.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 		
-		JPanel listPanel=new JPanel();
-		listPanel.setBackground(background);
-		listPanel.setLayout(new FlowLayout());
-		
-		JPanel labelPanel=new JPanel();
-		labelPanel.setBackground(background);
-		labelPanel.setLayout(new FlowLayout());
-		
-		
-		
+
+		JPanel listPanel2 = new JPanel();
+		listPanel2.setBackground(background);
+		listPanel2.setLayout(new BorderLayout());
+		listPanel2.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
 
 		// Menubar
 		{
 			// File menu
 			JMenuBar mb = new JMenuBar();
 			JMenu file = new JMenu("File");
+			JMenu help = new JMenu("Help");
 			mb.add(file);
+			mb.add(help);
+
+			// simple help text menubutton
+			final JMenuItem getHelp = new JMenuItem("Help");
+			getHelp.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					JOptionPane
+							.showMessageDialog(
+									frame,
+									"Press file in the top menu to add music from a file or folder. "
+											+ "\n You can also save and load playlists."
+											+ "\n\n The left list (the library list) contains all the tracks that have been imported into the musicplayer."
+											+ "\n The right list is the playlist, to which you can add and remove tracks that are in the librarylist.");
+				}
+			});
+			help.add(getHelp);
+
+			// about menubutton
+			JMenuItem about = new JMenuItem("About...");
+			about.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					JOptionPane.showMessageDialog(frame,
+							"Made by:\n Martin Eklund \n Andreas Lundblom");
+				}
+			});
+			help.add(about);
 
 			// add folder or file menubutton
 			final JMenuItem addFolder = new JMenuItem("Add file or folder...");
@@ -408,7 +370,7 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 
 					if (returnVal == JFileChooser.APPROVE_OPTION) {
 						File file = fc.getSelectedFile();
-						try {							
+						try {
 							addFolderToLibrary(file.toString());
 						} catch (Exception ex) {
 							addFileToLibrary(file.getPath());
@@ -422,15 +384,6 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 				}
 			});
 			file.add(addFolder);
-
-			// exit menubutton
-			JMenuItem exit = new JMenuItem("Exit");
-			exit.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					System.exit(0);
-				}
-			});
-			file.add(exit);
 
 			// save playlist menubutton
 			JMenuItem savePlaylist = new JMenuItem("Save playlist");
@@ -452,43 +405,49 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 
 			// load playlist menubutton
 			final JMenuItem loadPlaylist = new JMenuItem("Load playlist");
-			String path= (System.getenv("APPDATA") +"/" + ".KTHMusic");
+			String path = (System.getenv("APPDATA") + "/" + ".KTHMusic");
 			final JFileChooser fc2 = new JFileChooser(path);
 			fc2.setFileSelectionMode(JFileChooser.FILES_ONLY);
-			
-		
-			
+
 			loadPlaylist.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent evt) {
-					
 
 					int returnVal = fc2.showOpenDialog(loadPlaylist);
 					if (returnVal == JFileChooser.APPROVE_OPTION) {
 						File file = fc2.getSelectedFile();
 						try {
-							//clear old playlist out of the way
+							// clear old playlist out of the way
 							playlistTracks.clear();
-							playlistHelpList.clear();	
-							//read the new playlist
-							ArrayList<Track> temp= new ArrayList<Track>(loadPlayList(file.getName()));
+							playlistHelpList.clear();
+							// read the new playlist
+							ArrayList<Track> temp = new ArrayList<Track>(
+									loadPlayList(file.getName()));
 							System.out.println(temp);
-							for (Track track:temp){
-									System.out.println(track.getFilename());
-									addFileToLibrary(track.getFilename());
-									addToPlaylist(track);
-									playlistHelpList.addElement(track);
-																
+							for (Track track : temp) {
+								System.out.println(track.getFilename());
+								addFileToLibrary(track.getFilename());
+								addToPlaylist(track);
+								playlistHelpList.addElement(track);
+
 							}
 						} catch (Exception ex) {
-							
 
 						}
 
 					}
 				}
 			});
-			
 			file.add(loadPlaylist);
+
+			// exit menubutton
+			JMenuItem exit = new JMenuItem("Exit");
+			exit.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent evt) {
+					System.exit(0);
+				}
+			});
+			file.add(exit);
+
 			frame.setJMenuBar(mb);
 
 		}
@@ -498,13 +457,9 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 			infoLabel = new JLabel();
 			updateInfoLabel();
 			infoLabel.setForeground(foreground);
-			labelPanel.add(infoLabel);
 
-			int width = 200;
-			int height = 20;
-			playingLabel = new JLabel();
+			playingLabel = new JLabel("Nothing playing");
 			playingLabel.setForeground(foreground);
-			playingLabel.setPreferredSize(new Dimension(width, height));
 
 		}
 		// imported tracks list
@@ -513,9 +468,9 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 			for (Track track : getTrackList())
 				trackListHelpList.addElement(track);
 
-			trackList = new JList(trackListHelpList);			
+			trackList = new JList(trackListHelpList);
 			trackList.setForeground(foreground);
-			trackList.setBackground(background);
+			trackList.setBackground(brighterBackground);
 			trackList.setCellRenderer(new DefaultListCellRenderer() {
 				@Override
 				public Component getListCellRendererComponent(JList<?> list,
@@ -534,7 +489,10 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 
 			trackList
 					.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-			listPanel.add(new JScrollPane(trackList));
+			JScrollPane jsp = new JScrollPane(trackList);
+			jsp.setPreferredSize(new Dimension(400, 200));
+			jsp.setBorder(null);
+			listPanel1.add(jsp, BorderLayout.CENTER);
 			trackList.addListSelectionListener(new ListSelectionListener() {
 				public void valueChanged(ListSelectionEvent e) {
 					selectedTrack = (Track) trackList.getSelectedValue();
@@ -549,7 +507,6 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 			playlist = new JList(playlistHelpList);
 			playlist.setForeground(foreground);
 			playlist.setBackground(brighterBackground);
-			playlist.setVisibleRowCount(8);
 			playlist.setCellRenderer(new DefaultListCellRenderer() {
 				@Override
 				public Component getListCellRendererComponent(JList<?> list,
@@ -567,9 +524,10 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 			});
 			playlist.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
-			JScrollPane jScrollPane1 = new JScrollPane(playlist);
-			jScrollPane1.setBorder(null);
-			listPanel.add(jScrollPane1);
+			JScrollPane jsp2 = new JScrollPane(playlist);
+			jsp2.setBorder(null);
+			jsp2.setPreferredSize(new Dimension(400, 200));
+			listPanel2.add(jsp2, BorderLayout.CENTER);
 			playlist.addListSelectionListener(this);
 			playlist.addListSelectionListener(new ListSelectionListener() {
 				public void valueChanged(ListSelectionEvent e) {
@@ -578,7 +536,7 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 
 			});
 		}
-		labelPanel.add(playingLabel);
+
 		// Stop button
 		{
 			ImageIcon stopButtonIcon = new ImageIcon("stop.png");
@@ -616,11 +574,10 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 
 		// add to playlist button
 		{
-			JButton addToPlaylistButton = new JButton("Add");
+			JButton addToPlaylistButton = new JButton("Add to playlist");
 			addToPlaylistButton.setBorderPainted(false);
 			addToPlaylistButton.setForeground(foreground);
-			addToPlaylistButton.setBackground(brighterBackground); // slightly
-																	// brighter
+			addToPlaylistButton.setBackground(brighterBackground);
 			buttonPanel.add(addToPlaylistButton);
 			addToPlaylistButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -628,15 +585,14 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 					addToPlaylist(selectedTrack);
 					playlistHelpList.addElement(selectedTrack);
 
-					// addToPlaylist(tracks.get(selectedTrackIndex));
-					// playlistHelpList.addElement(tracks.get(selectedTrackIndex));
 				}
 			});
 		}
 
 		// remove from playlist button
 		{
-			JButton removeFromPlaylistButton = new JButton("Remove");
+			JButton removeFromPlaylistButton = new JButton(
+					"Remove from playlist");
 			removeFromPlaylistButton.setBorderPainted(false);
 			removeFromPlaylistButton.setForeground(foreground);
 			removeFromPlaylistButton.setBackground(brighterBackground);
@@ -685,7 +641,8 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 					try {
 						selectedTrack = playlistTracks.get(currentIndex - 1);
 					} catch (IndexOutOfBoundsException d) {
-						selectedTrack = playlistTracks.get(playlistTracks.size()-1);
+						selectedTrack = playlistTracks.get(playlistTracks
+								.size() - 1);
 					}
 					stopPlaying(); // stop playing old track before playing new
 					// track
@@ -695,12 +652,21 @@ public class MusicOrganizer extends JFrame implements ListSelectionListener,
 			});
 		}
 
-	//add the different panels
-	contentPane.add(buttonPanel, BorderLayout.PAGE_END);
-	contentPane.add(listPanel, BorderLayout.CENTER);
-	contentPane.add(labelPanel, BorderLayout.PAGE_START);
-
-	
+		// add labels to panels
+		JLabel libraryLabel = new JLabel("Library");
+		libraryLabel.setForeground(foreground);
+		JLabel playlistLabel = new JLabel("Playlist");
+		playlistLabel.setForeground(foreground);
+		listPanel1.add(infoLabel, BorderLayout.PAGE_START);
+		listPanel2.add(playingLabel, BorderLayout.PAGE_START);
+		listPanel1.add(libraryLabel, BorderLayout.PAGE_END);
+		listPanel2.add(playlistLabel, BorderLayout.PAGE_END);
+		
+		
+		// add the different panels
+		contentPane.add(buttonPanel, BorderLayout.PAGE_END);
+		contentPane.add(listPanel1, BorderLayout.LINE_START);
+		contentPane.add(listPanel2, BorderLayout.LINE_END);
 
 		frame.pack();
 		frame.setVisible(true);

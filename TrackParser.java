@@ -19,7 +19,7 @@ import org.xml.sax.SAXException;
 
 /**
  * An XML parser that writes tracks to a file or reads from a file
- * @author lundblom
+ * @author Martin Eklund and Andreas Lundblom
  *
  */
 public class TrackParser 

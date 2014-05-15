@@ -11,8 +11,6 @@ import java.util.ArrayList;
  * It is expected that file names of music tracks follow a standard format of artist name
  * and track name, separated by a dash. For example: TheBeatles-HereComesTheSun.mp3
  * 
- * @author David J. Barnes and Michael Kölling
- * @version 2011.03.27
  */
 public class TrackReader
 {
