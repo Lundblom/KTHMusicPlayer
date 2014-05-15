@@ -45,8 +45,7 @@ public class TrackParser
 		//Retrieve the users AppData folder
 		File xmlFile = new File(PATH_NAME + "/" + fileName);
 		
-		ArrayList<Track> list = new ArrayList<>();
-		
+		ArrayList<Track> list = new ArrayList<>();	
 		try 
 		{
 			//Initializing the document
@@ -57,6 +56,7 @@ public class TrackParser
 			doc.getDocumentElement().normalize();
 			//tracks is the name of the root element
 		    NodeList nodeList = doc.getElementsByTagName("track");
+			
 			  
 			//Iterate over all found elements  
 			for (int temp = 0; temp < nodeList.getLength(); temp++)
@@ -68,12 +68,10 @@ public class TrackParser
 				if (node.getNodeType() == Node.ELEMENT_NODE) 
 				{  
 				  	Element track = (Element) node;
-				  	
 				  	String artist = null;
 				   	String title = null;
 				   	String filename = null;
 					    	
-
                     //-------
                     NodeList artistList = track.getElementsByTagName("artist");
                     Element artistElement = (Element)artistList.item(0);
@@ -95,9 +93,10 @@ public class TrackParser
 
 
                     //------
+
 				    	
-				   	Track t = new Track(artist, title, filename);
-					    	
+				   	Track t = new Track(artist, title, filename);	
+				   	System.out.println(t.getArtist()+ t.getFilename()+ t.getTitle());
 				   	list.add(t);
 				} 
 			}
